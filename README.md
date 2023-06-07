@@ -32,7 +32,7 @@ Usage:
 5. To stop sharing your screen, click the "Stop Share" button or close the application window.
 
 Configuration:
-To configure the server address and port, modify the following line in the main.js file:
+To configure the server address and port, modify the following line in the index.js file:
 var socket = require('socket.io-client')('http://0.0.0.0:5000/view');
 Replace 0.0.0.0 with the IP address or hostname of your server, and 5000 with the appropriate port number. Make sure to append "/view" at the end of the URL.
 
