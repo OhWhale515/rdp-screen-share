@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const { v4: uuidv4 } = require('uuid');
 const screenshot = require('screenshot-desktop');
 
-var socket = require('socket.io-client')('http://192.168.0.36:5000');
+var socket = require('socket.io-client')('http://0.0.0.0:5000');
 var interval;
 
 function createWindow () {
