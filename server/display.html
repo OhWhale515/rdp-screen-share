@@ -10,17 +10,18 @@
     <script>
 
         window.onload = function() {
-            var room = prompt("Please enter room ID: ");
+            var room = prompt("Please enter room ID : ");
             if(room.trim().length == 0) {
-                document.write("<h1>Room ID is mandatory to join</h1>");
+                document.write("<h1> Room ID is mandatory to join </h1>");
                 return;
             }
 
-            socket = io.connect('http://0.0.0.0:5000');
+            socket = io.connect('http://192.168.0.36:5000');
 
             socket.emit("join-message", room);
             socket.on('screen-data', function(message){
                 $("img").attr("src", "data:image/png;base64," + message);
+
             })
         }
 
