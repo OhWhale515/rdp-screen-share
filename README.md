@@ -1,4 +1,4 @@
-CodeAli Remote Desktop Client
+Remote Desktop Client
 
 This repository contains the client script for My Remote Desktop, a remote desktop application built with Electron.
 
