@@ -66,7 +66,7 @@ function isSystemAvailable(room) {
   return Object.values(connectedClients).some(client => client.room === room);
 }
 
-const port = 5000;
+const port = process.env.YOUR_PORT || process.env.PORT || 5000;
 http.listen(port, function() {
   console.log('Server listening on port ' + port);
 });
