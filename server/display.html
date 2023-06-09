@@ -1,15 +1,24 @@
 <html lang="en">
 <head>
     <title>Remote Desktop</title>
+    <style>
+        /* Add custom styles for the server status */
+        .server-status {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body style="background: linear-gradient(45deg, #7b0909, #6771b8b8);">
+    <div class="server-status">
+        Server Status: <span id="status"></span>
+    </div>
     <img id="screenImage" style="width: 90%; height: 90%; margin-top: 2%; margin-left: 5%"/>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" crossorigin="anonymous"></script>
     <script>
         window.onload = function() {
-            var room = prompt("Please enter room ID: ");
+            var room = prompt("Please enter room ID:");
             if (room.trim().length === 0) {
                 document.write("<h1> Room ID is mandatory to join </h1>");
                 return;
@@ -20,6 +29,13 @@
             socket.emit("join-message", room);
             socket.on('screen-data', function(message){
                 $("#screenImage").attr("src", "data:image/png;base64," + message);
+            });
+
+            // Listen for the server status event
+            socket.on('server-status', function(data) {
+                const statusElement = document.getElementById("status");
+                statusElement.textContent = data.available ? "Online" : "Offline";
+                statusElement.style.color = data.available ? "green" : "red";
             });
         };
     </script>
