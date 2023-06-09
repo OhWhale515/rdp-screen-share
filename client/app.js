@@ -1,20 +1,25 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, ipcRenderer } = require('electron');
 const { v4: uuidv4 } = require('uuid');
 const screenshot = require('screenshot-desktop');
+const path = require('path');
 
-const socket = require('socket.io-client')();
+let mainWindow; // Declare the mainWindow variable
+let interval; // Declare the interval variable
 
 function createWindow() {
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 500,
-        height: 150,
+        height: 500,
         webPreferences: {
             nodeIntegration: true
         }
     });
+    mainWindow.removeMenu();
+    mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-    win.removeMenu();
-    win.loadFile('index.html');
+    mainWindow.on('closed', () => {
+        mainWindow = null; // Reset the mainWindow variable on window close
+    });
 }
 
 app.whenReady().then(createWindow);
@@ -26,30 +31,28 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow === null) {
         createWindow();
     }
 });
 
-ipcMain.on('start-share', function (event, arg) {
-    const uuid = uuidv4();
-    socket.emit('join-message', uuid);
-    event.reply('uuid', uuid);
+ipcMain.on("start-share", function (event, arg) {
+    var uuid = uuidv4();
+    event.reply("uuid", uuid);
 
-    const interval = setInterval(function () {
+    interval = setInterval(function () {
         screenshot().then((img) => {
-            const imgStr = Buffer.from(img).toString('base64');
+            var imgStr = Buffer.from(img).toString('base64');
 
-            const obj = {
-                room: uuid,
-                image: imgStr
-            };
+            var obj = {};
+            obj.room = uuid;
+            obj.image = imgStr;
 
-            socket.emit('screen-data', JSON.stringify(obj));
+            mainWindow.webContents.send("screen-data", JSON.stringify(obj)); // Use mainWindow.webContents.send instead of ipcRenderer.send
         });
     }, 100);
 });
 
-ipcMain.on('stop-share', function (event, arg) {
+ipcMain.on("stop-share", function (event, arg) {
     clearInterval(interval);
 });
