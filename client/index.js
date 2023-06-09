@@ -1,5 +1,7 @@
 const ipcRenderer = require('electron').ipcRenderer;
 
+let sharing = false; // Track the sharing status
+
 window.onload = function() {
   ipcRenderer.on("uuid", (event, data) => {
     document.getElementById("code").innerHTML = "Room ID: " + data;
@@ -14,20 +16,30 @@ function checkServerStatus() {
   fetch(serverUrl)
     .then(response => {
       if (response.ok) {
-        document.getElementById("server-status").innerHTML = "Server Status: <span class='online'>Online</span>";
+        document.getElementById("server-status").innerHTML = "Server Status: Online";
       } else {
-        document.getElementById("server-status").innerHTML = "Server Status: <span class='offline'>Offline</span>";
+        document.getElementById("server-status").innerHTML = "Server Status: Offline";
       }
     })
     .catch(error => {
-      document.getElementById("server-status").innerHTML = "Server Status: <span class='offline'>Offline</span>";
+      document.getElementById("server-status").innerHTML = "Server Status: Offline";
     });
 }
 
 function startShare() {
-  ipcRenderer.send("start-share", {});
+  if (!sharing) {
+    ipcRenderer.send("start-share", {});
+    sharing = true;
+    document.getElementById("start").style.display = "none";
+    document.getElementById("stop").style.display = "block";
+  }
 }
 
 function stopShare() {
-  ipcRenderer.send("stop-share", {});
+  if (sharing) {
+    ipcRenderer.send("stop-share", {});
+    sharing = false;
+    document.getElementById("stop").style.display = "none";
+    document.getElementById("start").style.display = "block";
+  }
 }
