@@ -28,7 +28,7 @@
             const socket = io.connect('http://192.168.0.57:5000');
 
 
-            socket.emit("join-message", room);
+            socket.emit("join-room", room);
             socket.on('screen-data', function(message){
                 $("#screenImage").attr("src", "data:image/png;base64," + message);
             });

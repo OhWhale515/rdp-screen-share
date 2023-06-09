@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Codeboard Screen Cast</title>
-
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Codeboard Screen Cast</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <div class="header">
-    Codeboard Screen Share
-  </div>
-  <div class="code" id="code"></div>
+    <div class="header">
+        Codeboard Screen Share
+    </div>
+    <div class="code" id="code"></div>
 
-  <div class="container">
-    <div class="server-status" id="server-status"></div>
-    <button class="btn" id="start" onclick="startShare()"> Start Share </button>
-    <button class="btn" id="stop" onclick="stopShare()"> Stop Share </button>
-  </div>
+    <div class="container">
+        <div class="server-status" id="server-status">
+            <span id="status-dot"></span>
+            <span id="status-text">Server Status: Unknown</span>
+        </div>
+        <input type="text" id="username" placeholder="Enter your username">
+        <button class="btn" id="start" onclick="startShare()"> Start Share </button>
+        <button class="btn" id="stop" onclick="stopShare()"> Stop Share </button>
+    </div>
 
-  <script src="index.js"></script>
-
+    <script src="index.js"></script>
 </body>
 </html>

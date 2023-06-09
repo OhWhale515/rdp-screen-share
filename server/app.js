@@ -3,110 +3,23 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const { v4: uuidv4 } = require('uuid');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
 
 const connectedClients = {}; // Keep track of connected clients
-const availableSystems = []; // Keep track of available systems
 
-// Set up session middleware
-app.use(session({
-  secret: 'your-secret-key',
-  resave: false,
-  saveUninitialized: false
-}));
-
-// Initialize passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Configure local strategy for passport
-passport.use(new LocalStrategy(
-  async function(username, password, done) {
-    try {
-      // Replace this with your own user retrieval logic from the database
-      const user = await User.findOne({ username: username });
-
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
-      }
-
-      // Check if the password matches
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (isMatch) {
-        return done(null, user);
-      } else {
-        return done(null, false, { message: 'Incorrect password.' });
-      }
-    } catch (err) {
-      return done(err);
-    }
-  }
-));
-
-// Serialize user object for session storage
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-// Deserialize user object from session storage
-passport.deserializeUser(async function(id, done) {
-  try {
-    // Replace this with your own user retrieval logic from the database
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-// Configure body parser middleware to parse request bodies
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-// Serve static files
 app.use(express.static('public'));
 
-// Define routes for user authentication
-app.post('/login', passport.authenticate('local'), function(req, res) {
-  res.redirect('/dashboard'); // Replace with your own redirect URL
-});
-
-app.get('/logout', function(req, res) {
-  req.logout();
-  res.redirect('/login'); // Replace with your own redirect URL
-});
-
-// Middleware to check if the user is authenticated
-function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/login'); // Replace with your own redirect URL
-}
-
-// Routes for your application's functionality
-app.get('/', isAuthenticated, function(req, res) {
-  res.sendFile(__dirname + '/index.html'); // Replace with your own file path
-});
-
-app.get('/dashboard', isAuthenticated, function(req, res) {
-  res.sendFile(__dirname + '/dashboard.html'); // Replace with your own file path
-});
-
-// Socket.IO connection
 io.on('connection', function(socket) {
   console.log('A user connected');
 
-  socket.on('join-message', function(room) {
+  socket.on('join-room', function(room, username) {
     console.log('User joined room:', room);
     socket.join(room);
 
-    // Store the client's socket in the connectedClients object
-    connectedClients[socket.id] = { room };
+    // Store the client's socket and username in the connectedClients object
+    connectedClients[socket.id] = { room, username };
+
+    // Emit an event to notify the server that a user has joined
+    io.emit('user-joined', username);
 
     // Emit an event to notify all connected clients about the updated list of available systems
     io.emit('available-systems', getAvailableSystems());
@@ -119,8 +32,14 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function() {
     console.log('A user disconnected');
 
+    // Retrieve the username of the disconnected client
+    const { username } = connectedClients[socket.id];
+
     // Remove the client's socket from the connectedClients object
     delete connectedClients[socket.id];
+
+    // Emit an event to notify the server that a user has disconnected
+    io.emit('user-left', username);
 
     // Emit an event to notify all connected clients about the updated list of available systems
     io.emit('available-systems', getAvailableSystems());
